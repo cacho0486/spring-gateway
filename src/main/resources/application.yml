@@ -5,6 +5,8 @@ uri:
     clientes: http://localhost:9000
     employee: http://localhost:8081
 spring:
+  application:
+    name: spring-gateway
   cloud:
     gateway:
       default-filters:
@@ -14,6 +16,10 @@ spring:
               replenishRate: 10
               burstCapacity: 20
               requestTokens: 1
+        - name: CircuitBreaker
+          args:
+              name: clienteService
+              fallbackUri: fordward:/service-fallback
       routes:
         - id: clientes_by_id
           uri: http://localhost:9000
@@ -23,3 +29,11 @@ spring:
             - RewritePath=/promerica/v1/api/cliente-por-id, /v1/api/clients
             - AddRequestHeader=X-GATEWAY-REQUEST-HEADER, GATEWAY_REQUEST
             - AddResponseHeader=X-GATEWAY-RESPONSE-HEADER, GATEWAY_RESPONSE
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]"
+# Trace every action
+management:
+  tracing:
+    sampling:
+      probability: 1.0
